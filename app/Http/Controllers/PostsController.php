@@ -26,7 +26,7 @@ class PostsController extends Controller
             $input['imagename'] = time().'.'.$image->getClientOriginalExtension();
             $image->move(public_path('/'), $input['imagename']);
             $reqPost=request(['title','author','body','image']);
-            $reqPost['image']=$input['imagename'];
+            $reqPost['image']='/'.$input['imagename'];
             Posts::create($reqPost);
 
           }else{
@@ -42,7 +42,7 @@ class PostsController extends Controller
             $input['imagename'] = time().'.'.$image->getClientOriginalExtension();
             $image->move(public_path('/'), $input['imagename']);
             $reqPost=request(['title','author','body','image']);
-            $reqPost['image']=$input['imagename'];
+            $reqPost['image']='/'.$input['imagename'];
             Posts::find($id)->update($reqPost);
 
           }else{
