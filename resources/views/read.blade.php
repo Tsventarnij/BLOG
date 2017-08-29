@@ -17,7 +17,7 @@
           <p>Дата обновления: {{$post->updated_at}})</p>
         @endif
         @if($post->image!=NULL)
-        <img src="/{{$post->image}}" width="400" height="255" >
+        <img src="{{$post->image}}" width="400" height="255" >
         @endif
         <p>{{$post->body}}</p>
         <p><a href="/delete/{{$post->id}}">Удалить пост</a></p>
