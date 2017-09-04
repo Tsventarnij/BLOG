@@ -19,8 +19,38 @@
         <li><a href="/about">Обо мне</a></li>
         @show
 
+			</ul></div>
+			<div id="login">
+			<!-- Right Side Of Navbar -->
+			<ul>
+					<!-- Authentication Links -->
+					@if (Auth::guest())
+							<li><a href="{{ route('login') }}">Login</a></li>
+							<li><a href="{{ route('register') }}">Register</a></li>
+					@else
+							<li>
+									<a href="#" role="button" aria-expanded="false">
+											{{ Auth::user()->name }}
+									</a>
+</li><li>
+									<ul role="menu">
+											<li>
+													<a href="{{ route('logout') }}"
+															onclick="event.preventDefault();
+																			 document.getElementById('logout-form').submit();">
+															Logout
+													</a>
+
+													<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+															{{ csrf_field() }}
+													</form>
+											</li>
+									</ul>
+							</li>
+					@endif
 			</ul>
 		</div>
+
 
 	</div>
 </div>
@@ -35,10 +65,11 @@
 <div id="page">
 	<div id="page-bgtop">
 		<div id="content">
+			<div class="post">
 @yield('content')
 
 
-
+				</div>
 			</div>
 		</div>
 		<!-- end #content

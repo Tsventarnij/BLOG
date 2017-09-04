@@ -23,3 +23,7 @@ Route::get('/posts/{id}','PostsController@show');
 Route::get('/delete/{id}','PostsController@delete');
 
 Route::get('/change/{id}','PostsController@change');
+Route::post('/like/{id}','PostsController@liker');
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');

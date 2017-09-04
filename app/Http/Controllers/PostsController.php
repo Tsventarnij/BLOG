@@ -4,11 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Posts;
+use App\Like;
 class PostsController extends Controller
 {
      public function index() {
         $posts=Posts::latest()->where('deleted', '==', '0')->get();
+
         return view('index', compact('posts'));
+      }
+      public function censor($str){
+          $arrCensor=["бублик", "ревербератор", "кастет", "хорь", "алкоголь",
+          "превысокомногорассмотрительствующий", "гражданин", "паста"];
+
+          $arrString=preg_split('//u', $str, null, PREG_SPLIT_NO_EMPTY);
+          for($i=0; $i<count($arrCensor); $i++){
+              $pos=mb_stripos($str,$arrCensor[$i],0);
+
+              while($pos!==false){
+                $censorLen=mb_strlen($arrCensor[$i]);
+                for($j=1; $j<$censorLen-1; $j++){
+                  $arrString[$pos+$j]='*';
+                }
+                $pos=mb_stripos($str,$arrCensor[$i],$pos+$censorLen);
+              }
+            }
+
+        return implode($arrString);
       }
 
       public function new() {
@@ -25,32 +46,70 @@ class PostsController extends Controller
           if($image!=NULL){
             $input['imagename'] = time().'.'.$image->getClientOriginalExtension();
             $image->move(public_path('/'), $input['imagename']);
-            $reqPost=request(['title','author','body','image']);
-            $reqPost['image']='/'.$input['imagename'];
-            Posts::create($reqPost);
-
-          }else{
-            Posts::create(request(['title','author','body']));
+            $image='/'.$input['imagename'];
           }
+          Posts::create([
+            "user_id" => auth()->id(),
+            "title" => $this->censor(request('title')),
+            "body" => $this->censor(request('body')),
+            "image" => $image,
+          ]);
 
           return redirect('/');
 
         }
         public function edit($id, Request $request) {
-          $image = $request->file('image');
-          if($image!=NULL){
-            $input['imagename'] = time().'.'.$image->getClientOriginalExtension();
-            $image->move(public_path('/'), $input['imagename']);
-            $reqPost=request(['title','author','body','image']);
-            $reqPost['image']='/'.$input['imagename'];
-            Posts::find($id)->update($reqPost);
-
-          }else{
-            Posts::find($id)->update(request(['title','author','body']));
-          }
+          $atributs=['posts_id'=>$id,
+                     'like'=>'1'];
+          $requ=Like::where($atributs)->first();
+          if($requ['user_id']==auth()->id()){
+              $image = $request->file('image');
+              if($image!=NULL){
+                $input['imagename'] = time().'.'.$image->getClientOriginalExtension();
+                $image->move(public_path('/'), $input['imagename']);
+                $image='/'.$input['imagename'];
+              }
+              Posts::find($id)->update([
+                "title" => $this->censor(request('title')),
+                "body" => $this->censor(request('body')),
+                "image" => $image,
+              ]);
+           }
            return redirect('/');
 
          }
+
+
+      public function liker($id){
+        $atributs=['user_id'=>auth()->id(),
+                   'posts_id'=>$id];
+        $like=request(["like"])['like'];
+        $unLike=request(["unlike"])['unlike'];
+
+        $requ=Like::where($atributs)->first();
+        if($requ==NULL){
+          Like::create([
+            'user_id'=>auth()->id(),
+            'posts_id'=>$id,
+            'like'=>$like,
+            'unlike'=>$unLike,
+          ]);
+        }else{
+          if($like){
+            if($requ['like']) $like=false;
+            if($requ['unlike']) $unLike=false;
+          }
+          if($unLike){
+            if($requ['like']) $like=false;
+            if($requ['unlike']) $unLike=false;
+          }
+          $requ->find($requ['id'])->update([
+            'like'=>$like,
+            'unlike'=>$unLike,
+          ]);
+        }
+        return redirect()->back();
+      }
 
       public function show($id){
 
@@ -60,9 +119,11 @@ class PostsController extends Controller
         return view('read', compact('post'));
       }
       public function delete($id) {
+        //dd(Posts::find($id)->user_id);
+        if(auth()->id()==Posts::find($id)->user_id){
           Posts::find($id)->update(['deleted'=>'1']);
-
-         return redirect('/');
+        }
+        return redirect('/');
 
        }
        public function change($id) {

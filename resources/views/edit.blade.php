@@ -10,11 +10,12 @@
 
 @section('content')
 <div class="entry">
+@if(\App\Like::where('posts_id','=', $post->id)->where('like', '=', 1)->first()['user_id']==auth()->id())
 <form name="newBlog" method="post" action="/edit/{{$post->id}}"  enctype="multipart/form-data">
 {{csrf_field() }}
-  <p><b>Ваше имя:</b><br>
+  <!--<p><b>Ваше имя:</b><br>
    <input name="author" size="40" required value="{{$post->author}}">
-  </p>
+ </p>-->
   <p><b>Ваш заголовок:</b><br>
    <input name="title" size="40" required  value="{{$post->title}}">
   </p>
@@ -26,6 +27,9 @@
   <p><input type="submit" value="Отправить">
    <input type="reset" value="Очистить"></p>
  </form>
+ @else
+<p>ВЫ НЕМОЖЕТЕ РЕДАКТИРОВАТЬ ДАННЫЙ ПОСТ</p>
+ @endif
 </div>
 
 @endsection
